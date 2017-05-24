@@ -1,0 +1,42 @@
+{
+  "name": "redis-wrapper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "gulp build",
+    "lint": "tslint --fix --exclude \"./src/**/[config|swagger]*.*\" ./src/**/*.ts",
+    "start": "gulp build:dev & node ./dist/app.js",
+    "test": "gulp build:dev & mocha --timeout=5000 ./dist/**/*.test.js & gulp clean",
+    "cover": "gulp build:dev & istanbul cover node_modules/mocha/bin/_mocha --root ./dist ./dist/**/*.test.js & gulp clean"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/barend-erasmus/redis-wrapper.git"
+  },
+  "author": "Barend Erasmus",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/barend-erasmus/redis-wrapper/issues"
+  },
+  "homepage": "https://github.com/barend-erasmus/redis-wrapper#readme",
+  "devDependencies": {
+    "@types/chai": "^3.5.2",
+    "@types/mocha": "^2.2.41",
+    "@types/sinon": "^2.2.2",
+    "chai": "^3.5.0",
+    "gulp": "^3.9.1",
+    "gulp-clean": "^0.3.2",
+    "gulp-rename": "^1.2.2",
+    "gulp-typescript": "^3.1.6",
+    "mocha": "^3.4.1",
+    "run-sequence": "^1.2.2",
+    "sinon": "^2.3.1",
+    "typescript": "^2.3.3"
+  },
+  "dependencies": {
+    "co": "^4.6.0",
+    "object-hash": "^1.1.8",
+    "redis": "^2.7.1"
+  }
+}
