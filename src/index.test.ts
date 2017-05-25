@@ -4,7 +4,6 @@ import * as co from 'co';
 import 'mocha';
 import * as sinon from 'sinon';
 
-
 import { RedisWrapper } from './index';
 
 describe('RedisWrapper', () => {
@@ -110,4 +109,3 @@ describe('RedisWrapper', () => {
     });
   });
 });
-

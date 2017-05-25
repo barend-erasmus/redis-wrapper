@@ -44,7 +44,7 @@ export class RedisWrapper {
 
     }
 
-    private addWithServerAndPort(server: string, port: number, key: any, obj: any, expiry: number): Promise<boolean> { 
+    private addWithServerAndPort(server: string, port: number, key: any, obj: any, expiry: number): Promise<boolean> {
         const sha1: string = hash(key);
 
         return this.getRedisClient(server, port).then((redisClient: any) => {
@@ -110,7 +110,7 @@ export class RedisWrapper {
             family: 4,
             host: server,
             port,
-        })
+        });
 
         return new Promise((resolve, reject) => {
 
