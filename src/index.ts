@@ -1,114 +1,121 @@
 // Imports
-import * as redis from 'redis';
+import * as Redis from 'ioredis';
 import * as hash from 'object-hash';
 
 export class RedisWrapper {
 
     public static getInstance(name: string, server: string, port: number): RedisWrapper {
-        if (RedisWrapper.instance === null) {
-            RedisWrapper.instance = new RedisWrapper(name, server, port);
+        if (!RedisWrapper.instances[name]) {
+            RedisWrapper.instances[name] = new RedisWrapper(name, server, port);
         }
-        return RedisWrapper.instance;
+        return RedisWrapper.instances[name];
     }
 
-    private static instance: RedisWrapper = null;
-    private static redisClient: any = null;
+    private static instances: {} = {};
+    private static redisClients: {} = {};
 
     constructor(private name: string, private server: string, private port: number) {
 
     }
 
     public add(key: any, obj: any, expiry: number): Promise<boolean> {
+        return this.addWithServerAndPort(this.server, this.port, key, obj, expiry);
+    }
+
+    public get<T>(key: any): Promise<T> {
+        return this.getWithServerAndPort(this.server, this.port, key);
+    }
+
+    public addWithServerAndPort(server: string, port: number,key: any, obj: any, expiry: number): Promise<boolean> { 
         const sha1: string = hash(key);
 
-        return this.getRedisClient().then((redisClient: any) => {
+        return this.getRedisClient(server, port).then((redisClient: any) => {
             return new Promise((resolve, reject) => {
                 if (!key) {
                     resolve(false);
                     return;
                 }
+                
+                redisClient.setex(`${this.name}-${sha1}`, expiry, JSON.stringify(obj), (err: Error) => {
+                    if (err) {
+                        if (err.message.startsWith('MOVED')) {
+                            const nodeServer: string = err.message.split(' ')[2].split(':')[0];
+                            const nodePort: number = parseInt(err.message.split(' ')[2].split(':')[1]);
 
-                redisClient.setex(sha1, expiry, JSON.stringify(obj));
-                resolve(true);
+                            this.addWithServerAndPort(nodeServer, nodePort, key, obj, expiry).then((result: any) => {
+                                resolve(result);
+                            }).catch(reject);
+                        } else {
+                            reject(err);
+                        }
+                    } else {
+                        resolve(true);
+                    }
+                });
+
             });
         });
     }
 
-    public get<T>(key: any): Promise<T> {
-
+    private getWithServerAndPort<T>(server: string, port: number, key: any): Promise<T> {
         const sha1: string = hash(key);
 
-        return this.getRedisClient().then((redisClient: any) => {
+        return this.getRedisClient(server, port).then((redisClient: any) => {
             return new Promise((resolve, reject) => {
-                redisClient.get(sha1, (err: Error, reply: string) => {
+                redisClient.get(`${this.name}-${sha1}`, (err: Error, reply: string) => {
                     if (err) {
-                        reject(err);
-                        return;
-                    }
+                        if (err.message.startsWith('MOVED')) {
+                            const nodeServer: string = err.message.split(' ')[2].split(':')[0];
+                            const nodePort: number = parseInt(err.message.split(' ')[2].split(':')[1]);
 
-                    resolve(JSON.parse(reply));
+                            this.getWithServerAndPort(nodeServer, nodePort, key).then((json: any) => {
+                                resolve(json);
+                            }).catch(reject);
+                        } else {
+                            reject(err);
+                        }
+                    } else {
+                        resolve(JSON.parse(reply));
+                    }
                 });
             });
         });
     }
 
-    // public flush(): Promise<boolean> {
+    public flush(): Promise<boolean> {
 
-    //     const redisClient: any = this.getRedisClient();
-
-    //     return new Promise((resolve, reject) => {
-
-    //         redisClient.flushdb((err: Error, succeeded: boolean) => {
-    //             if (err) {
-    //                 reject(err);
-    //                 return;
-    //             }
-
-    //             resolve(true);
-    //         });
-    //     });
-
-    // }
-
-    public close(): Promise<boolean> {
-
-        return this.getRedisClient().then((redisClient: any) => {
-            return new Promise<boolean>((resolve, reject) => {
-
-                redisClient.end(true);
-                RedisWrapper.instance = null;
-                resolve(true);
-            });
-        });
-    }
-
-    private getRedisClient(): Promise<any> {
-
-        if (RedisWrapper.redisClient !== null) {
-            return Promise.resolve(RedisWrapper.redisClient);
-        }
-
-        RedisWrapper.redisClient = redis.createClient({
-            host: this.server,
-            port: this.port,
-            retry_strategy: (options: any) => {
-                if (options.error && options.error.code === 'ECONNREFUSED') {
-                    return new Error('The server refused the connection');
-                }
-                if (options.total_retry_time > 1000 * 60 * 60) {
-                    return new Error('Retry time exhausted');
-                }
-                if (options.times_connected > 10) {
-                    return undefined;
-                }
-                return Math.min(options.attempt * 100, 3000);
-            },
-        });
+        const redisClient: any = this.getRedisClient(this.server, this.port);
 
         return new Promise((resolve, reject) => {
 
-            RedisWrapper.redisClient.on("connect", () => {
-                resolve(RedisWrapper.redisClient);
+            redisClient.flushdb((err: Error, succeeded: boolean) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(true);
+            });
+        });
+
+    }
+
+    private getRedisClient(server: string, port: number): Promise<any> {
+
+        if (RedisWrapper.redisClients[`${server}-${port}`]) {
+            return Promise.resolve(RedisWrapper.redisClients[`${server}-${port}`]);
+        }
+
+        RedisWrapper.redisClients[`${server}-${port}`] = new Redis({
+            port: port,
+            host: server,
+            family: 4
+        })
+
+        return new Promise((resolve, reject) => {
+
+            RedisWrapper.redisClients[`${server}-${port}`].on("connect", () => {
+                resolve(RedisWrapper.redisClients[`${server}-${port}`]);
             });
         });
     }

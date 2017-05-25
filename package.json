@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "co": "^4.6.0",
-    "object-hash": "^1.1.8",
-    "redis": "^2.7.1"
+    "ioredis": "^3.0.0",
+    "object-hash": "^1.1.8"
   }
 }
