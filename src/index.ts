@@ -53,7 +53,7 @@ export class RedisWrapper {
                     resolve(false);
                     return;
                 }
-                
+
                 redisClient.setex(`${this.name}-${sha1}`, expiry, JSON.stringify(obj), (err: Error) => {
                     if (err) {
                         if (err.message.startsWith('MOVED')) {
