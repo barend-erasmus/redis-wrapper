@@ -26,7 +26,25 @@ export class RedisWrapper {
         return this.getWithServerAndPort(this.server, this.port, key);
     }
 
-    public addWithServerAndPort(server: string, port: number,key: any, obj: any, expiry: number): Promise<boolean> { 
+    public flush(): Promise<boolean> {
+
+        const redisClient: any = this.getRedisClient(this.server, this.port);
+
+        return new Promise((resolve, reject) => {
+
+            redisClient.flushdb((err: Error, succeeded: boolean) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(true);
+            });
+        });
+
+    }
+
+    private addWithServerAndPort(server: string, port: number, key: any, obj: any, expiry: number): Promise<boolean> {
         const sha1: string = hash(key);
 
         return this.getRedisClient(server, port).then((redisClient: any) => {
@@ -35,12 +53,12 @@ export class RedisWrapper {
                     resolve(false);
                     return;
                 }
-                
+
                 redisClient.setex(`${this.name}-${sha1}`, expiry, JSON.stringify(obj), (err: Error) => {
                     if (err) {
                         if (err.message.startsWith('MOVED')) {
                             const nodeServer: string = err.message.split(' ')[2].split(':')[0];
-                            const nodePort: number = parseInt(err.message.split(' ')[2].split(':')[1]);
+                            const nodePort: number = parseInt(err.message.split(' ')[2].split(':')[1], undefined);
 
                             this.addWithServerAndPort(nodeServer, nodePort, key, obj, expiry).then((result: any) => {
                                 resolve(result);
@@ -66,7 +84,7 @@ export class RedisWrapper {
                     if (err) {
                         if (err.message.startsWith('MOVED')) {
                             const nodeServer: string = err.message.split(' ')[2].split(':')[0];
-                            const nodePort: number = parseInt(err.message.split(' ')[2].split(':')[1]);
+                            const nodePort: number = parseInt(err.message.split(' ')[2].split(':')[1], undefined);
 
                             this.getWithServerAndPort(nodeServer, nodePort, key).then((json: any) => {
                                 resolve(json);
@@ -82,24 +100,6 @@ export class RedisWrapper {
         });
     }
 
-    public flush(): Promise<boolean> {
-
-        const redisClient: any = this.getRedisClient(this.server, this.port);
-
-        return new Promise((resolve, reject) => {
-
-            redisClient.flushdb((err: Error, succeeded: boolean) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-
-                resolve(true);
-            });
-        });
-
-    }
-
     private getRedisClient(server: string, port: number): Promise<any> {
 
         if (RedisWrapper.redisClients[`${server}-${port}`]) {
@@ -107,10 +107,10 @@ export class RedisWrapper {
         }
 
         RedisWrapper.redisClients[`${server}-${port}`] = new Redis({
-            port: port,
+            family: 4,
             host: server,
-            family: 4
-        })
+            port,
+        });
 
         return new Promise((resolve, reject) => {
 

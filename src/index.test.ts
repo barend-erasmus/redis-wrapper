@@ -4,21 +4,18 @@ import * as co from 'co';
 import 'mocha';
 import * as sinon from 'sinon';
 
-
 import { RedisWrapper } from './index';
 
 describe('RedisWrapper', () => {
 
   describe('add', () => {
 
-    beforeEach(() => {
+    // beforeEach(() => {
 
-
-    });
-
+    // });
 
     it('should return true given string as key', () => {
-      return co(function* () {
+      return co(function*() {
 
         const redisWrapper: RedisWrapper = RedisWrapper.getInstance('region-1', 'redisserver2', 7001);
 
@@ -29,7 +26,7 @@ describe('RedisWrapper', () => {
     });
 
     it('should return true given object as key', () => {
-      return co(function* () {
+      return co(function*() {
 
         const redisWrapper: RedisWrapper = RedisWrapper.getInstance('region-1', 'redisserver2', 7001);
 
@@ -40,7 +37,7 @@ describe('RedisWrapper', () => {
     });
 
     it('should return false given null as key', () => {
-      return co(function* () {
+      return co(function*() {
 
         const redisWrapper: RedisWrapper = RedisWrapper.getInstance('region-1', 'redisserver2', 7001);
 
@@ -51,16 +48,14 @@ describe('RedisWrapper', () => {
     });
   });
 
-
   describe('get', () => {
 
-    beforeEach(() => {
+    // beforeEach(() => {
 
-    });
-
+    // });
 
     it('should return object given existing key', () => {
-      return co(function* () {
+      return co(function*() {
 
         const redisWrapper: RedisWrapper = RedisWrapper.getInstance('region-1', 'redisserver2', 7001);
 
@@ -73,7 +68,7 @@ describe('RedisWrapper', () => {
     });
 
     it('should return object given existing key on different node', () => {
-      return co(function* () {
+      return co(function*() {
 
         let redisWrapper: RedisWrapper = RedisWrapper.getInstance('region-1', 'redisserver2', 7001);
 
@@ -88,7 +83,7 @@ describe('RedisWrapper', () => {
     });
 
     it('should return null given non-existing key', () => {
-      return co(function* () {
+      return co(function*() {
 
         const redisWrapper: RedisWrapper = RedisWrapper.getInstance('region-1', 'redisserver2', 7001);
 
@@ -99,7 +94,7 @@ describe('RedisWrapper', () => {
     });
 
     it('should return null given existing key on different name', () => {
-      return co(function* () {
+      return co(function*() {
 
         let redisWrapper: RedisWrapper = RedisWrapper.getInstance('region-1', 'redisserver2', 7001);
 
@@ -112,7 +107,5 @@ describe('RedisWrapper', () => {
         expect(result).to.be.null;
       });
     });
-
   });
 });
-
