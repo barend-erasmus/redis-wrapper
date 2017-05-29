@@ -4,8 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "gulp build",
-    "lint": "tslint --fix --exclude \"./src/**/[config|swagger]*.*\" ./src/**/*.ts",
     "start": "gulp build:dev & node ./dist/app.js",
     "test": "gulp build:dev & mocha --timeout=5000 ./dist/**/*.test.js & gulp clean",
     "cover": "gulp build:dev & istanbul cover node_modules/mocha/bin/_mocha --root ./dist ./dist/**/*.test.js & gulp clean"
