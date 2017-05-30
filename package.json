@@ -1,8 +1,9 @@
 {
   "name": "ioredis-wrapper",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "",
   "main": "./dist/index.js",
+  "typings": "./dist/index",
   "scripts": {
     "start": "gulp build:dev & node ./dist/app.js",
     "test": "gulp build:dev & mocha --timeout=5000 ./dist/**/*.test.js & gulp clean",
