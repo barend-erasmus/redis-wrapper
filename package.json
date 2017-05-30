@@ -1,8 +1,8 @@
 {
-  "name": "redis-wrapper",
-  "version": "1.0.0",
+  "name": "ioredis-wrapper",
+  "version": "0.1.0",
   "description": "",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "scripts": {
     "start": "gulp build:dev & node ./dist/app.js",
     "test": "gulp build:dev & mocha --timeout=5000 ./dist/**/*.test.js & gulp clean",
@@ -25,8 +25,6 @@
     "chai": "^3.5.0",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",
-    "gulp-rename": "^1.2.2",
-    "gulp-ssh": "^0.6.0",
     "gulp-typescript": "^3.1.6",
     "mocha": "^3.4.1",
     "run-sequence": "^1.2.2",
